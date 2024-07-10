@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Component, inject } from '@angular/core';
 
 @Component({
   selector: 'app-root',
@@ -6,5 +7,12 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  title = 'interceptors';
+  http: HttpClient = inject(HttpClient);
+  constructor(){
+    this.http.get(`https://jsonplaceholder.typicode.com/comments`).subscribe((data:any)=>{
+      console.log("Data", data);
+    }, (err)=>{
+      console.log("Error from ts file", err);
+    })
+  }
 }
