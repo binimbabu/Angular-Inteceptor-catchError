@@ -156,3 +156,133 @@ return next.handle(request);
 }
 }
 
+
+
+
+
+ What is an Interceptor in Angular?
+
+
+An Interceptor in Angular is a class that intercepts HTTP requests and/or responses. You use it to:
+
+Add headers (like authentication tokens)
+
+Log requests or responses
+
+Catch global HTTP errors
+
+Modify requests before sending
+
+Modify responses before they reach your component
+
+It works automatically for all HttpClient requests once configured.
+
+🔧 Real-World Example: Add an Authorization Header
+📁 1. Create the Interceptor
+bash
+Copy
+Edit
+ng generate interceptor auth
+This generates a class like:
+
+ts
+Copy
+Edit
+import { Injectable } from '@angular/core';
+import {
+  HttpInterceptor, HttpRequest, HttpHandler, HttpEvent
+} from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable()
+export class AuthInterceptor implements HttpInterceptor {
+  intercept(
+    req: HttpRequest<any>,
+    next: HttpHandler
+  ): Observable<HttpEvent<any>> {
+
+    // 1️⃣ Add fake token
+    const authToken = 'Bearer FAKE_JWT_TOKEN';
+
+    // 2️⃣ Clone the request and add the new header
+    const authReq = req.clone({
+      headers: req.headers.set('Authorization', authToken)
+    });
+
+    console.log('Intercepted request with header:', authReq);
+
+    // 3️⃣ Pass modified request to the next handler
+    return next.handle(authReq);
+  }
+}
+🔄 Step-by-Step Explanation
+Step	What It Does
+HttpRequest	Represents the original HTTP request
+clone()	Makes an exact copy of the request (because requests are immutable)
+set()	Adds the Authorization header
+next.handle()	Sends the modified request onward to the server
+
+🧩 2. Register the Interceptor in app.module.ts
+ts
+Copy
+Edit
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { AuthInterceptor } from './auth.interceptor';
+
+@NgModule({
+  providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true // Allows multiple interceptors
+    }
+  ]
+})
+export class AppModule {}
+📦 3. Making an HTTP Request
+user.service.ts
+ts
+Copy
+Edit
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({ providedIn: 'root' })
+export class UserService {
+  constructor(private http: HttpClient) {}
+
+  getUsers(): Observable<any> {
+    return this.http.get('https://jsonplaceholder.typicode.com/users');
+  }
+}
+app.component.ts
+ts
+Copy
+Edit
+export class AppComponent implements OnInit {
+  users: any[] = [];
+
+  constructor(private userService: UserService) {}
+
+  ngOnInit() {
+    this.userService.getUsers().subscribe(data => this.users = data);
+  }
+}
+🔍 What Happens Behind the Scenes:
+getUsers() makes an HTTP request.
+
+The request is intercepted by AuthInterceptor.
+
+The interceptor adds an Authorization header.
+
+The request is sent to the API with the new header.
+
+The response is received and returned to your component.
+
+🧠 Summary
+Term	Meaning
+HttpInterceptor	A service that modifies HTTP requests/responses
+intercept()	The main method that runs before the HTTP request
+clone()	Used to safely edit immutable requests
+next.handle()	Sends the modified request forward
