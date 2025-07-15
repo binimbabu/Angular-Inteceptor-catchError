@@ -179,15 +179,12 @@ It works automatically for all HttpClient requests once configured.
 
 🔧 Real-World Example: Add an Authorization Header
 📁 1. Create the Interceptor
-bash
-Copy
-Edit
+
 ng generate interceptor auth
 This generates a class like:
 
 ts
-Copy
-Edit
+
 import { Injectable } from '@angular/core';
 import {
   HttpInterceptor, HttpRequest, HttpHandler, HttpEvent
@@ -224,8 +221,7 @@ next.handle()	Sends the modified request onward to the server
 
 🧩 2. Register the Interceptor in app.module.ts
 ts
-Copy
-Edit
+
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthInterceptor } from './auth.interceptor';
 
@@ -242,8 +238,7 @@ export class AppModule {}
 📦 3. Making an HTTP Request
 user.service.ts
 ts
-Copy
-Edit
+
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -258,8 +253,7 @@ export class UserService {
 }
 app.component.ts
 ts
-Copy
-Edit
+
 export class AppComponent implements OnInit {
   users: any[] = [];
 
