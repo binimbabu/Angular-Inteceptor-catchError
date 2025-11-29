@@ -274,6 +274,96 @@ The request is sent to the API with the new header.
 
 The response is received and returned to your component.
 
+
+
+
+
+
+
+
+
+In Angular, Interceptors are part of the HttpClient module and allow you to intercept and modify HTTP requests and responses globally before they are handled by the HttpClient or returned to the app.
+
+⭐ What Are Interceptors?
+
+Angular HTTP interceptors are services that implement the HttpInterceptor interface. They can:
+
+Add or modify HTTP request headers (e.g., attach JWT token)
+
+Handle errors globally
+
+Log request/response timing or data
+
+Show/hide loaders
+
+Modify the HTTP response
+
+Retry failed requests
+
+📌 How to Create an Interceptor
+Step 1: Generate using Angular CLI
+ng generate interceptor auth
+
+Step 2: Implement the interceptor
+import { Injectable } from '@angular/core';
+import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable()
+export class AuthInterceptor implements HttpInterceptor {
+  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+
+    const token = 'sample-auth-token';
+
+    const modifiedReq = req.clone({
+      setHeaders: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    return next.handle(modifiedReq);
+  }
+}
+
+Step 3: Register in app.module.ts
+providers: [
+  {
+    provide: HTTP_INTERCEPTORS,
+    useClass: AuthInterceptor,
+    multi: true
+  }
+]
+
+⚠️ Error Handling in Interceptor
+import { catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
+
+intercept(req: HttpRequest<any>, next: HttpHandler) {
+  return next.handle(req).pipe(
+    catchError(error => {
+      console.error('Error occurred:', error);
+      return throwError(() => error);
+    })
+  );
+}
+
+⏳ Adding a Loader Example
+intercept(req: HttpRequest<any>, next: HttpHandler) {
+  this.loaderService.show();
+  return next.handle(req).pipe(
+    finalize(() => this.loaderService.hide())
+  );
+}
+
+🔁 Retry Failed Requests Example
+import { retry } from 'rxjs/operators';
+
+intercept(req: HttpRequest<any>, next: HttpHandler) {
+  return next.handle(req).pipe(
+    retry(2)  // retry 2 times if fails
+  );
+}
+
 🧠 Summary
 Term	Meaning
 HttpInterceptor	A service that modifies HTTP requests/responses
